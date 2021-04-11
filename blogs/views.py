@@ -97,8 +97,11 @@ def blog_action_view(request, *args, **kwargs):
 @api_view(['GET'])
 def blog_list_view(request, *args, **kwargs):
     qs = Blog.objects.all()
+    username = request.GET.get('username') # ?username=Justin
+    if username != None:
+        qs = qs.filter(user__username__iexact=username)
     serializer = BlogSerializer(qs, many=True)
-    return Response(serializer.data, status=200)
+    return Response( serializer.data, status=200)
 
 
 

@@ -1,107 +1,45 @@
 import React, {useEffect, useState}  from 'react'
 
-import {apiBlogCreate, apiBlogList} from './lookup'
+import {BlogCreate} from './create'
+import {Blog} from './detail'
+import {apiBlogDetail} from './lookup'
+import {BlogsList} from './list'
+
 
 export function BlogsComponent(props) {
-    const textAreaRef = React.createRef()
     const [newBlogs, setNewBlogs] = useState([])
-
-    const handleBackendUpdate = (response, status) =>{
-      // backend api response handler
+    const canBlog = props.canBlog === "false" ? false : true
+    const handleNewBlog = (newBlog) =>{
       let tempNewBlogs = [...newBlogs]
-      if (status === 201){
-        tempNewBlogs.unshift(response)
-        setNewBlogs(tempNewBlogs)
-      } else {
-        console.log(response)
-        alert("An error occured please try again")
-      }
-    }
-
-    const handleSubmit = (event) => {
-      event.preventDefault()
-      const newVal = textAreaRef.current.value
-      // backend api request
-      apiBlogCreate(newVal, handleBackendUpdate)
-      textAreaRef.current.value = ''
+      tempNewBlogs.unshift(newBlog)
+      setNewBlogs(tempNewBlogs)
     }
     return <div className={props.className}>
-            <div className='col-12 mb-3'>
-              <form onSubmit={handleSubmit}>
-                <textarea ref={textAreaRef} required={true} className='form-control' name='blog'>
-
-                </textarea>
-                <button type='submit' className='btn btn-primary my-3'>Blog</button>
-            </form>
-            </div>
-        <BlogsList newBlogs={newBlogs} />
+            {canBlog === true && <BlogCreate didBlog={handleNewBlog} className='col-12 mb-3' />}
+          <BlogsList newBlogs={newBlogs} {...props} />
     </div>
 }
 
-export function BlogsList(props) {
-    const [blogsInit, setBlogsInit] = useState([])
-    const [blogs, setBlogs] = useState([])
-    const [blogsDidSet, setBlogsDidSet] = useState(false)
-    useEffect(()=>{
-      const final = [...props.newBlogs].concat(blogsInit)
-      if (final.length !== blogs.length) {
-        setBlogs(final)
-      }
-    }, [props.newBlogs, blogs, blogsInit])
 
-    useEffect(() => {
-      if (blogsDidSet === false){
-        const handleBlogListLookup = (response, status) => {
-          if (status === 200){
-            setBlogsInit(response)
-            setBlogsDidSet(true)
-          } else {
-            alert("There was an error")
-          }
-        }
-        apiBlogList(handleBlogListLookup)
-      }
-    }, [blogsInit, blogsDidSet, setBlogsDidSet])
-    return blogs.map((item, index)=>{
-      return <Blog blog={item} className='my-5 py-5 border bg-white text-dark' key={`${index}-{item.id}`} />
-    })
-  }
+export function BlogDetailComponent(props){
+  const {blogId} = props
+  const [didLookup, setDidLookup] = useState(false)
+  const [blog, setBlog] = useState(null)
 
-
-export function ActionBtn(props) {
-    const {blog, action} = props
-    const [likes, setLikes] = useState(blog.likes ? blog.likes : 0)
-    const [userLike, setUserLike] = useState(blog.userLike === true ? true : false)
-    const className = props.className ? props.className : 'btn btn-primary btn-sm'
-    const actionDisplay = action.display ? action.display : 'Action'
-
-    const handleClick = (event) => {
-      event.preventDefault()
-      if (action.type === 'like') {
-        if (userLike === true) {
-          // perhaps i Unlike it?
-          setLikes(likes - 1)
-          setUserLike(false)
-        } else {
-          setLikes(likes + 1)
-          setUserLike(true)
-        }
-
-      }
+  const handleBackendLookup = (response, status) => {
+    if (status === 200) {
+      setBlog(response)
+    } else {
+      alert("There was an error finding your blog.")
     }
-    const display = action.type === 'like' ? `${likes} ${actionDisplay}` : actionDisplay
-    return <button className={className} onClick={handleClick}>{display}</button>
   }
+  useEffect(()=>{
+    if (didLookup === false){
 
-export function Blog(props) {
-    const {blog} = props
-    const className = props.className ? props.className : 'col-10 mx-auto col-md-6'
-    return <div className={className}>
-        <p>{blog.id} - {blog.content}</p>
-        <div className='btn btn-group'>
-          <ActionBtn blog={blog} action={{type: "like", display:"Likes"}}/>
-          <ActionBtn blog={blog} action={{type: "unlike", display:"Unlike"}}/>
-          <ActionBtn blog={blog} action={{type: "repost", display:""}}/>
-        </div>
-    </div>
-  }
+      apiBlogDetail(blogId, handleBackendLookup)
+      setDidLookup(true)
+    }
+  }, [blogId, didLookup, setDidLookup])
+
+  return blog === null ? null : <Blog blog={blog} className={props.className} />
+ }
