@@ -28,7 +28,7 @@ SECRET_KEY = 'ct4))*o_y%nv=nnh8aqo$c0$jbhp1xdpj7*br%3+0qxb-zwvsp'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost','*']
 LOGIN_URL = "/login"
 
 
