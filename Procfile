@@ -1,1 +1,1 @@
-web: gunicorn apex.wsgi
+web: npm start
