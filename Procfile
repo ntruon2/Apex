@@ -1,1 +1,1 @@
-web: gunicorn apexgaming.wsgi
+web: gunicorn ApexGaming.wsgi
